@@ -1,12 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser'
+import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
 import connectDB from './config/db';
 import swaggerSpec from './config/swagger';
 import eventRoutes from './routes/eventRoutes';
 import skillRoutes from './routes/skillRoutes';
-import userRoutes from './routes/userRoutes';
+import authRoutes from './routes/authRoutes';
 import blogRoutes from './routes/blogRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
 import commentRoutes from './routes/commentRoutes';
@@ -23,6 +25,8 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
+app.use(helmet())
 
 // Swagger documentation
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -33,7 +37,7 @@ app.get('/', (req, res , next)=> res.json({message: "✅ Server is healthy"}))
 
 app.use('/api/events', eventRoutes);
 app.use('/api/skills', skillRoutes);
-app.use('/api/auth', userRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/blog', blogRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/comments', commentRoutes);
