@@ -6,7 +6,7 @@
 
 ## Live Demo
 
-You can access the live version of the application at [api.iconnect.ramrachai.com](http://api.iconnect.ramrachai.com).
+You can access the live version of the application at [api.iconnect.ramrachai.com](https://api.iconnect.ramrachai.com).
 
 ## Technologies Used
 
