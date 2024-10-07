@@ -8,6 +8,7 @@ import { sendEmail } from '../utils/sendMail';
 import { passwordReset } from '../utils/emailTemplates/passwordReset';
 import { registerSchema } from '../zodValidations/registerSchema';
 import { uploadToS3 } from '../config/awsS3Config';
+import { welcomeEmail } from '../utils/emailTemplates/welcome';
 
 const generateToken = (id: string, role: string) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET as string, {
@@ -19,9 +20,9 @@ export const registerUser = async (req: Request, res: Response) => {
   console.log("--register route --", req.body)
   try {
     const validatedData = registerSchema.parse(req.body);
-    const { fullname, email, password, role, whatsapp} = validatedData;
+    const { fullname, email, password, role, whatsapp } = validatedData;
     const file = req.file as Express.Multer.File
-    console.log("===afile ===", file )
+    console.log("===afile ===", file)
 
     let avatarUrl = ""
 
@@ -39,6 +40,8 @@ export const registerUser = async (req: Request, res: Response) => {
     }
 
     const user: IUser = await User.create({ fullname, email, password, role, whatsapp, avatar: avatarUrl });
+
+    await sendEmail(user.email, "Welcome to indigenous connect", welcomeEmail(user.fullname))
 
     res.status(201).json({
       _id: user._id,
@@ -61,11 +64,11 @@ export const loginUser = async (req: Request, res: Response) => {
     if (user && (await user.comparePassword(password))) {
       res.json({
         id: user._id,
-        fullane: user.fullname, 
+        fullane: user.fullname,
         email: user.email,
-        role: user.role,  
-        avatar: user.avatar, 
-        whatsapp: user.whatsapp, 
+        role: user.role,
+        avatar: user.avatar,
+        whatsapp: user.whatsapp,
         token: generateToken(user._id, user.role),
       });
     } else {
