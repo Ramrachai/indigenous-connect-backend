@@ -106,7 +106,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+    const fiveMinutes = 1 * 60 * 1000; // 1 minutes in milliseconds
     const timeNow = Date.now();
 
     if (user.updatedAt && (timeNow - user.updatedAt.getTime()) < fiveMinutes) {
