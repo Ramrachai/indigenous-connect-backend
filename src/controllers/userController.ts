@@ -109,9 +109,9 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const fiveMinutes = 1 * 60 * 1000; // 1 minutes in milliseconds
     const timeNow = Date.now();
 
-    if (user.updatedAt && (timeNow - user.updatedAt.getTime()) < fiveMinutes) {
-      return res.status(429).json({ message: 'Password reset request already made. Please wait 5 minutes before trying again.' });
-    }
+    // if (user.updatedAt && (timeNow - user.updatedAt.getTime()) < fiveMinutes) {
+    //   return res.status(429).json({ message: 'Password reset request already made. Please wait 5 minutes before trying again.' });
+    // }
 
     const resetToken = crypto.randomBytes(20).toString('hex');
 
