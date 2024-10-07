@@ -35,12 +35,12 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Routes
 app.get('/', (req, res , next)=> res.json({message: "✅ Server is healthy"}))
 
-app.use('/api/events', eventRoutes);
-app.use('/api/skills', skillRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/blog', blogRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/comments', commentRoutes);
+app.use('/events', eventRoutes);
+app.use('/skills', skillRoutes);
+app.use('/auth', authRoutes);
+app.use('/blog', blogRoutes);
+app.use('/analytics', analyticsRoutes);
+app.use('/comments', commentRoutes);
 
 
 // Start server
