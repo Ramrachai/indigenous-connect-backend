@@ -8,15 +8,15 @@ import {
     deleteComment,
     getAllComments
 } from '../controllers/commentController';
-import authMiddleware, { adminMiddleware } from '../middleware/authMiddleware';
+import authMiddleware, { isAdmin } from '../middleware/authMiddleware';
 
 const commentRouter = express.Router();
 
 commentRouter.get('/:blogPostId', getComments);
 commentRouter.post('/', createComment);
-commentRouter.get('/all', authMiddleware, adminMiddleware, getAllComments);
-commentRouter.put('/:id/approve', authMiddleware, adminMiddleware, approveComment);
-commentRouter.put('/:id/disapprove', authMiddleware, adminMiddleware, disapproveComment);
-commentRouter.delete('/:id', authMiddleware, adminMiddleware, deleteComment);
+commentRouter.get('/all', authMiddleware, isAdmin, getAllComments);
+commentRouter.put('/:id/approve', authMiddleware, isAdmin, approveComment);
+commentRouter.put('/:id/disapprove', authMiddleware, isAdmin, disapproveComment);
+commentRouter.delete('/:id', authMiddleware, isAdmin, deleteComment);
 
 export default commentRouter;

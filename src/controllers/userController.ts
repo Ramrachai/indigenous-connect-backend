@@ -26,6 +26,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
         res.status(200).json({
             users,
+            totalUsers,
             totalPages: Math.ceil(totalUsers / limit),
             currentPage: page,
         });

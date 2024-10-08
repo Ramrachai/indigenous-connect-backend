@@ -1,7 +1,7 @@
 // server/src/middlewares/authMiddleware.ts
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import User from '../models/User';
+import User, { ROLE } from '../models/User';
 
 interface JwtPayload {
   id: string;
@@ -42,11 +42,27 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
   }
 };
 
-export const adminMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  if (req.user && req.user.role === 'admin') {
+export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user && req.user.role === ROLE.ADMIN) {
     next();
   } else {
     res.status(403).json({ message: 'Access denied. Admin only.' });
+  }
+};
+
+export const isModerator = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user && req.user.role === ROLE.MODERATOR) {
+    next();
+  } else {
+    res.status(403).json({ message: 'Access denied. Moderator only.' });
+  }
+};
+
+export const isAdminOrModerator = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user && req.user.role === ROLE.MODERATOR || req.user.role === ROLE.ADMIN) {
+    next();
+  } else {
+    res.status(403).json({ message: 'Access denied. Admin & Moderator only.' });
   }
 };
 
