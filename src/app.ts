@@ -12,6 +12,7 @@ import authRoutes from './routes/authRoutes';
 import blogRoutes from './routes/blogRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
 import commentRoutes from './routes/commentRoutes';
+import userRouter from './routes/userRoutes';
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.use('/auth', authRoutes);
 app.use('/blog', blogRoutes);
 app.use('/analytics', analyticsRoutes);
 app.use('/comments', commentRoutes);
+app.use('/users', userRouter)
 
 
 // Start server
