@@ -5,20 +5,23 @@ import { paginationSchema, updateUserRoleSchema, updateUserStatusSchema } from '
 
 export const getAllUsers = async (req: Request, res: Response) => {
     try {
-        // Parse the query with validation
-        const query = paginationSchema.parse(req.query);
+
+        const parsedQuery = {
+            ...req.query,
+            page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
+            limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined
+        };
+        const query = paginationSchema.parse(parsedQuery);
         const page = query.page || 1;
         const limit = query.limit || 10;
         const search = query.search ? { fullname: new RegExp(query.search, "i") } : {};
 
-        // Execute the query using .lean() and projection
-        const users = await User.find(search, "_id fullname email role status whatsapp ethnicity avatar") // Only select necessary fields
+        const users = await User.find(search, "_id fullname email role status whatsapp ethnicity avatar") 
             .skip((page - 1) * limit)
             .limit(limit)
-            .lean() // Convert to plain JavaScript objects
+            .lean() 
             .exec();
 
-        // Get total count for pagination
         const totalUsers = await User.countDocuments(search);
 
         res.status(200).json({
