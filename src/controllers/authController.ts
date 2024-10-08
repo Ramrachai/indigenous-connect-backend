@@ -70,6 +70,7 @@ export const loginUser = async (req: Request, res: Response) => {
         role: user.role,
         avatar: user.avatar,
         whatsapp: user.whatsapp,
+        staus: user.status, 
         token: generateToken(user._id, user.role),
       });
     } else {
