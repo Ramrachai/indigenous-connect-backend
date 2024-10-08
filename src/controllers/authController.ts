@@ -20,7 +20,7 @@ export const registerUser = async (req: Request, res: Response) => {
   console.log("--register route --", req.body)
   try {
     const validatedData = registerSchema.parse(req.body);
-    const { fullname, email, password, role, whatsapp } = validatedData;
+    const { fullname, email, password, role, whatsapp , ethnicity } = validatedData;
     const file = req.file as Express.Multer.File
     console.log("===afile ===", file)
 
@@ -39,7 +39,7 @@ export const registerUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const user: IUser = await User.create({ fullname, email, password, role, whatsapp, avatar: avatarUrl });
+    const user: IUser = await User.create({ fullname, email, password, role, whatsapp, avatar: avatarUrl, ethnicity });
 
     await sendEmail(user.email, "Welcome to indigenous connect", welcomeEmail(user.fullname))
 
@@ -57,6 +57,7 @@ export const registerUser = async (req: Request, res: Response) => {
 };
 
 export const loginUser = async (req: Request, res: Response) => {
+  console.log("--login route hit --", req.body)
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
