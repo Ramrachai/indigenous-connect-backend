@@ -1,173 +1,124 @@
-// server/src/controllers/userController.ts
-import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import User, { IUser, ROLE, STATUS } from '../models/User';
-import crypto from 'crypto'
-import { emailSchema } from '../zodValidations/emailSchema';
-import { sendEmail } from '../utils/sendMail';
-import { passwordReset } from '../utils/emailTemplates/passwordReset';
-import { registerSchema } from '../zodValidations/registerSchema';
-import { uploadToS3 } from '../config/awsS3Config';
-import { welcomeEmail } from '../utils/emailTemplates/welcome';
+import { Request, Response } from "express";
+import User from "../models/User";
+import { paginationSchema, updateUserRoleSchema, updateUserStatusSchema } from '../zodValidations/userValidation';
 
-const generateToken = (id: string, role: string) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET as string, {
-    expiresIn: '30d',
-  });
+
+export const getAllUsers = async (req: Request, res: Response) => {
+    try {
+
+        const parsedQuery = {
+            ...req.query,
+            page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
+            limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined
+        };
+        const query = paginationSchema.parse(parsedQuery);
+        const page = query.page || 1;
+        const limit = query.limit || 10;
+        const search = query.search ? { fullname: new RegExp(query.search, "i") } : {};
+
+        const users = await User.find(search, "_id fullname email role status whatsapp ethnicity avatar") 
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .lean() 
+            .exec();
+
+        const totalUsers = await User.countDocuments(search);
+
+        res.status(200).json({
+            users,
+            totalUsers,
+            totalPages: Math.ceil(totalUsers / limit),
+            currentPage: page,
+        });
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(400).json({ error: error.message });
+        } else {
+            res.status(400).json({ error: "An unknown error occurred" });
+        }
+    }
 };
 
-export const registerUser = async (req: Request, res: Response) => {
-  console.log("--register route --", req.body)
+
+
+
+export const updateUserStatus = async (req: Request, res: Response) => {
   try {
-    const validatedData = registerSchema.parse(req.body);
-    const { fullname, email, password, role, whatsapp } = validatedData;
-    const file = req.file as Express.Multer.File
-    console.log("===afile ===", file)
+      const userId = req.params.id;
+      const { status } = updateUserStatusSchema.parse(req.body);
 
-    let avatarUrl = ""
+      const user = await User.findByIdAndUpdate(userId, { status }, { new: true });
 
-    if (file) {
-      const folder = 'users'
-      const { fileUrl } = await uploadToS3(file, folder)
-      avatarUrl = fileUrl
-    } else {
-      avatarUrl = "https://indigenous-connect.s3.ap-south-1.amazonaws.com/person.png"
-    }
+      if (!user) return res.status(404).json({ error: "User not found" });
 
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    const user: IUser = await User.create({ fullname, email, password, role, whatsapp, avatar: avatarUrl });
-
-    await sendEmail(user.email, "Welcome to indigenous connect", welcomeEmail(user.fullname))
-
-    res.status(201).json({
-      _id: user._id,
-      username: user.fullname,
-      email: user.email,
-      role: user.role,
-      avatar: user.avatar,
-      token: generateToken(user._id, user.role),
-    });
+      res.status(200).json({ message: "Status updated successfully", user });
   } catch (error) {
-    res.status(400).json({ message: 'Error registering user', error });
+      if (error instanceof Error) {
+          res.status(400).json({ error: error.message });
+      } else {
+          res.status(400).json({ error: "An unknown error occurred" });
+      }
   }
 };
 
-export const loginUser = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
 
-    if (user && (await user.comparePassword(password))) {
-      res.json({
-        id: user._id,
-        fullane: user.fullname,
-        email: user.email,
-        role: user.role,
-        avatar: user.avatar,
-        whatsapp: user.whatsapp,
-        token: generateToken(user._id, user.role),
-      });
-    } else {
-      res.status(401).json({ message: 'Invalid email or password' });
-    }
+
+export const updateUserRole = async (req: Request, res: Response) => {
+  try {
+      const userId = req.params.id;
+      const { role } = updateUserRoleSchema.parse(req.body);
+
+      const user = await User.findByIdAndUpdate(userId, { role }, { new: true });
+
+      if (!user) return res.status(404).json({ error: "User not found" });
+
+      res.status(200).json({ message: "Role updated successfully", user });
   } catch (error) {
-    res.status(400).json({ message: 'Error logging in', error });
-  }
-};
-
-export const getProfile = async (req: Request, res: Response) => {
-  try {
-    const user = await User.findById(req.user._id).select('-password');
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching user profile', error });
+      if (error instanceof Error) {
+          res.status(400).json({ error: error.message });
+      } else {
+          res.status(400).json({ error: "An unknown error occurred" });
+      }
   }
 };
 
 
-export const forgotPassword = async (req: Request, res: Response) => {
-  const validatedData = emailSchema.safeParse(req.body);
-  if (!validatedData.success) {
-    return res.status(400).json({ message: validatedData.error.errors[0].message });
-  }
 
-  const { email } = validatedData.data;
-
+export const deleteUser = async (req: Request, res: Response) => {
   try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+      const userId = req.params.id;
 
-    const fiveMinutes = 1 * 60 * 1000; // 1 minutes in milliseconds
-    const timeNow = Date.now();
+      const user = await User.findByIdAndDelete(userId);
 
-    // if (user.updatedAt && (timeNow - user.updatedAt.getTime()) < fiveMinutes) {
-    //   return res.status(429).json({ message: 'Password reset request already made. Please wait 5 minutes before trying again.' });
-    // }
+      if (!user) return res.status(404).json({ error: "User not found" });
 
-    const resetToken = crypto.randomBytes(20).toString('hex');
-
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = new Date(timeNow + 10 * 60 * 1000); // Token expires in 10 minutes
-
-    await user.save();
-
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-    await sendEmail(user.email, 'Password Reset Request', passwordReset(resetUrl))
-
-    res.status(200).json({ message: 'Reset password email sent' });
+      res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     if (error instanceof Error) {
-      console.error('Error in forgotPassword:', error.message);
-      res.status(500).json({ message: 'Error sending reset email', error: error.message });
+        res.status(400).json({ error: error.message });
     } else {
-      console.error('Unexpected error in forgotPassword:', error);
-      res.status(500).json({ message: 'Unexpected error occurred' });
+        res.status(400).json({ error: "An unknown error occurred" });
     }
   }
 };
 
 
 
-export const resetPassword = async (req: Request, res: Response) => {
-  const { password, token } = req.body;
 
+export const getUser = async (req: Request, res: Response) => {
   try {
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: new Date() },
-    });
+      const userId = req.params.id;
 
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired token' });
-    }
+      const user = await User.findById(userId);
 
-    user.password = password;
+      if (!user) return res.status(404).json({ error: "User not found" });
 
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-
-    await user.save();
-
-    const newToken = generateToken(user._id, user.role);
-
-    res.status(200).json({
-      message: 'Password reset successful',
-      token: newToken,
-    });
+      res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({ message: 'Error resetting password', error });
+      if (error instanceof Error) {
+          res.status(400).json({ error: error.message });
+      } else {
+          res.status(400).json({ error: "An unknown error occurred" });
+      }
   }
 };
-
-
-
-

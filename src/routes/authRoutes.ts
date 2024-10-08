@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerUser, loginUser, getProfile, forgotPassword, resetPassword } from '../controllers/userController';
+import { registerUser, loginUser, getProfile, forgotPassword, resetPassword } from '../controllers/authController';
 import authMiddleware from '../middleware/authMiddleware';
 import { imageUpload } from '../middleware/multer';
 
