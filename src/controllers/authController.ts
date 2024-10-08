@@ -57,7 +57,6 @@ export const registerUser = async (req: Request, res: Response) => {
 };
 
 export const loginUser = async (req: Request, res: Response) => {
-  console.log("--login route hit --", req.body)
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -65,12 +64,12 @@ export const loginUser = async (req: Request, res: Response) => {
     if (user && (await user.comparePassword(password))) {
       res.json({
         id: user._id,
-        fullane: user.fullname,
+        fullname: user.fullname,
         email: user.email,
         role: user.role,
         avatar: user.avatar,
         whatsapp: user.whatsapp,
-        staus: user.status, 
+        status: user.status, 
         token: generateToken(user._id, user.role),
       });
     } else {
