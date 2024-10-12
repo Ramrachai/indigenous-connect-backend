@@ -30,8 +30,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(helmet());
 
-console.log('Changes by Diamond');
-
 // Swagger documentation
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
