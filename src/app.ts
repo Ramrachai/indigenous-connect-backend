@@ -16,6 +16,7 @@ import userRouter from "./routes/userRoutes";
 
 dotenv.config();
 console.log("Test from Real Dewan!");
+console.log("Test2 from Real Dewan!");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
