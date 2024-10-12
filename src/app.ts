@@ -14,6 +14,8 @@ import analyticsRoutes from './routes/analyticsRoutes';
 import commentRoutes from './routes/commentRoutes';
 import userRouter from './routes/userRoutes';
 
+console.log('Hello from zerocoolmong');
+
 dotenv.config();
 
 const app = express();
