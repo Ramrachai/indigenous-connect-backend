@@ -14,7 +14,6 @@ import analyticsRoutes from "./routes/analyticsRoutes";
 import commentRoutes from "./routes/commentRoutes";
 import userRouter from "./routes/userRoutes";
 
-console.log("brach from rimra");
 
 dotenv.config();
 
