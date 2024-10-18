@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import User from "../models/User";
 import { paginationSchema, updateUserRoleSchema, updateUserStatusSchema } from '../zodValidations/userValidation';
+import { sendEmail } from '../utils/sendMail';
+import { accountActivatedEmail } from '../utils/emailTemplates/accountActivated';
 
 
 export const getAllUsers = async (req: Request, res: Response) => {
@@ -51,6 +53,10 @@ export const updateUserStatus = async (req: Request, res: Response) => {
         const user = await User.findByIdAndUpdate(userId, { status }, { new: true });
 
         if (!user) return res.status(404).json({ error: "User not found" });
+
+        const loginUrl = process.env.FRONTEND_URL + "/login"
+
+        await sendEmail(user.email, "Account has been activated", accountActivatedEmail(loginUrl, user.avatar))
 
         res.status(200).json({ message: "Status updated successfully", user });
     } catch (error) {
