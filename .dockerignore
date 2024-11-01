@@ -1,0 +1,16 @@
+node_modules
+.pnpm-store
+coverage
+test
+.idea
+.github
+.git
+.gitignore
+*.md
+dist
+.env.example
+.env
+*.log
+.DS_Store
+README.md
+*.md
