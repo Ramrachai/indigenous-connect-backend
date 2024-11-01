@@ -1,7 +1,7 @@
-// server/src/middlewares/authMiddleware.ts
+
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import User, { ROLE } from '../models/User';
+import User, { ROLE, STATUS } from '../models/User';
 
 interface JwtPayload {
   id: string;
@@ -65,5 +65,16 @@ export const isAdminOrModerator = (req: Request, res: Response, next: NextFuncti
     res.status(403).json({ message: 'Access denied. Admin & Moderator only.' });
   }
 };
+
+
+export const isPending = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user && req.user.status === STATUS.PENDING) {
+    res.status(403).json({ message: 'Access denied. Account is still in pending status' });
+  } else {
+    next();
+  }
+};
+
+
 
 export default authMiddleware;
