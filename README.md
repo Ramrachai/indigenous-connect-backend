@@ -64,6 +64,28 @@ To set up the project locally, follow these steps:
 
    The application should now be running on [http://localhost:5000](http://localhost:5000).
 
+## Running with Docker
+
+### Local Development
+
+To run the application locally in a Docker container, follow these steps:
+
+1. Install [Docker](https://docs.docker.com/get-docker/) on your machine if it is not already installed.
+2. Ensure you have a `.env` file with the required environment variables.
+3. Build and run the Docker container using the following commands:
+
+   ```bash
+   docker build -t <your-app-name>:dev -f Dockerfile.dev .
+   docker run --name <your-container-name> --env-file .env -p 5000:5000 <your-app-name>:dev
+   ```
+
+### Production Development
+Follow similar steps, but replace `Dockerfile.dev` with `Dockerfile.prod` to build image for production:
+
+   ```bash
+   docker build -t <your-app-name>:prod -f Dockerfile.prod .
+   ```
+
 # NOTE: 
 This project might not have the most cutting-edge code you'll find online, but it works! My goal here isn’t to create something revolutionary or to write the most efficient, scalable, or high-quality code ever. Instead, the main focus is to encourage members of the indigenous community to contribute—even if it’s just a single line of code.
 
